@@ -1,0 +1,244 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: dark;
+  --color-background: #0a0a0a;
+  --color-surface: #111111;
+  --color-surface-raised: #161616;
+  --color-border: rgba(255, 255, 255, 0.08);
+  --color-border-strong: rgba(255, 255, 255, 0.18);
+  --color-copy: #ffffff;
+  --color-copy-muted: rgba(255, 255, 255, 0.48);
+  --color-ferrari: #ff2800;
+  --color-ferrari-deep: #cc1e00;
+  --font-display: "Bebas Neue", sans-serif;
+  --font-body: "Inter Tight", sans-serif;
+  --font-editorial: "Cormorant Garamond", serif;
+}
+
+@theme inline {
+  --font-display: var(--font-display);
+  --font-sans: var(--font-body);
+  --font-editorial: var(--font-editorial);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--color-background);
+  color: var(--color-copy);
+  min-width: 320px;
+  overflow-x: hidden;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+::selection {
+  background: rgba(255, 40, 0, 0.35);
+}
+
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0a0a0a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-ferrari);
+  border-radius: 0;
+}
+
+/* ── Layout helpers ───────────────────────────── */
+
+.site-container {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+@media (max-width: 768px) {
+  .site-container {
+    padding: 0 1.25rem;
+  }
+}
+
+/* ── Section chrome ───────────────────────────── */
+
+.section-number {
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  letter-spacing: 0.22em;
+  color: var(--color-ferrari);
+  text-transform: uppercase;
+}
+
+.section-rule {
+  width: 100%;
+  height: 1px;
+  background: var(--color-border);
+}
+
+.section-rule-red {
+  width: 3rem;
+  height: 2px;
+  background: var(--color-ferrari);
+  margin-bottom: 2.5rem;
+}
+
+/* ── Marquee strip ────────────────────────────── */
+
+.marquee-track {
+  display: flex;
+  gap: 0;
+  width: max-content;
+  animation: marquee 22s linear infinite;
+}
+
+.marquee-item {
+  display: flex;
+  align-items: center;
+  gap: 2.5rem;
+  padding-right: 2.5rem;
+  white-space: nowrap;
+}
+
+/* ── Stat number display ──────────────────────── */
+
+.stat-number {
+  font-family: var(--font-display);
+  font-size: clamp(4.5rem, 8vw, 7rem);
+  line-height: 0.9;
+  letter-spacing: 0.02em;
+  color: var(--color-copy);
+}
+
+/* ── Buttons ──────────────────────────────────── */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.9rem 2rem;
+  font-size: 0.72rem;
+  font-family: var(--font-body);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  cursor: pointer;
+  transition: all 160ms ease;
+  border: none;
+}
+
+.btn-primary {
+  background: var(--color-ferrari);
+  color: white;
+}
+
+.btn-primary:hover {
+  background: var(--color-ferrari-deep);
+  transform: translateY(-1px);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.btn-ghost:hover {
+  border-color: rgba(255, 255, 255, 0.55);
+  transform: translateY(-1px);
+}
+
+/* ── Table ────────────────────────────────────── */
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.data-table th {
+  padding: 0.75rem 1.25rem;
+  font-size: 0.63rem;
+  text-transform: uppercase;
+  letter-spacing: 0.24em;
+  color: var(--color-copy-muted);
+  text-align: left;
+  border-bottom: 1px solid var(--color-border);
+  font-weight: 400;
+}
+
+.data-table td {
+  padding: 0.85rem 1.25rem;
+  font-size: 0.88rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.data-table tbody tr:hover td {
+  background: rgba(255, 40, 0, 0.04);
+  color: white;
+}
+
+/* ── Search input ─────────────────────────────── */
+
+.search-input {
+  width: 100%;
+  background: #111;
+  border: 1px solid var(--color-border);
+  color: white;
+  padding: 0.85rem 1.25rem;
+  font-size: 0.88rem;
+  outline: none;
+  transition: border-color 160ms;
+}
+
+.search-input::placeholder {
+  color: var(--color-copy-muted);
+}
+
+.search-input:focus {
+  border-color: var(--color-ferrari);
+}
+
+/* ── Keyframes ────────────────────────────────── */
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-in-left {
+  from { opacity: 0; transform: translateX(-32px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.5; transform: scale(0.75); }
+}
