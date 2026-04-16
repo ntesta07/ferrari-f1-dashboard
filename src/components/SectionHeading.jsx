@@ -1,36 +1,62 @@
-import { motion } from "framer-motion";
+/**
+ * SectionHeading.jsx — Reusable section header
+ *
+ * Matches zkatz-website pattern:
+ * - Thin racing-red separator line
+ * - Large display headline
+ * - Optional muted description
+ * - fadeInUp spread
+ */
 
-export function SectionHeading({ eyebrow, title, description, align = "left", number }) {
+import { motion } from 'framer-motion';
+
+// Reusable animation props — spread with {...fadeInUp}
+const fadeInUp = {
+  initial: { opacity: 0, y: 40 },
+  whileInView: { opacity: 1, y: 0 },
+  viewport: { once: true, margin: '-100px' },
+  transition: { duration: 0.6 },
+};
+
+export function SectionHeading({ eyebrow, title, description, align = 'left' }) {
+  const centerClass = align === 'center' ? 'text-center mx-auto items-center' : '';
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.3 }}
-      transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-      className={`${align === "center" ? "text-center mx-auto" : ""} max-w-3xl`}
-    >
-      <div className={`mb-5 flex items-center gap-4 ${align === "center" ? "justify-center" : ""}`}>
-        {number && (
-          <span className="font-body text-[0.62rem] text-[var(--color-ferrari)] tabular-nums" style={{ letterSpacing: "0.2em" }}>
-            {number}
-          </span>
-        )}
-        {number && <div className="h-px w-8 bg-[var(--color-ferrari)]" />}
-        <span className="text-[0.65rem] uppercase tracking-[0.32em] text-white/38">{eyebrow}</span>
-      </div>
+    <div className={`max-w-3xl ${align === 'center' ? 'mx-auto text-center' : ''}`}>
+      {/* Red separator line — exactly as in zkatz */}
+      <motion.div
+        className={`mb-8 h-px w-16 bg-racing-red ${align === 'center' ? 'mx-auto' : ''}`}
+        {...fadeInUp}
+      />
 
-      <h2
-        className="font-display uppercase text-white leading-[0.88]"
-        style={{ fontSize: "clamp(2.8rem, 5vw, 4.5rem)", letterSpacing: "0.02em" }}
+      {eyebrow && (
+        <motion.p
+          className="mb-3 font-body text-xs uppercase tracking-[0.32em] text-off-white/38"
+          {...fadeInUp}
+          transition={{ duration: 0.6, delay: 0.05 }}
+        >
+          {eyebrow}
+        </motion.p>
+      )}
+
+      <motion.h2
+        className="font-display uppercase text-off-white leading-[0.9]"
+        style={{ fontSize: 'clamp(2.6rem, 5vw, 4.5rem)', letterSpacing: '0.02em' }}
+        {...fadeInUp}
+        transition={{ duration: 0.6, delay: 0.1 }}
       >
         {title}
-      </h2>
+      </motion.h2>
 
       {description && (
-        <p className="mt-5 text-[0.95rem] leading-7 text-white/45 max-w-xl">
+        <motion.p
+          className="mt-5 font-body text-[0.95rem] leading-7 text-off-white/45"
+          {...fadeInUp}
+          transition={{ duration: 0.6, delay: 0.18 }}
+        >
           {description}
-        </p>
+        </motion.p>
       )}
-    </motion.div>
+    </div>
   );
 }

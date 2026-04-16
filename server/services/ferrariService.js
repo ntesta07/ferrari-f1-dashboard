@@ -8,6 +8,10 @@ const CACHE_TTL_MS = CACHE_TTL_MINUTES * 60 * 1000;
 const FERRARI_CONSTRUCTOR_ID = "ferrari";
 const memoryCache = new Map();
 
+// In-flight deduplication: if a fetch for a season is already running,
+// every concurrent caller gets the same promise instead of firing new requests.
+const pendingRequests = new Map();
+
 function isFresh(timestamp) {
   return Date.now() - timestamp < CACHE_TTL_MS;
 }
@@ -274,18 +278,37 @@ function normalizeFerrariData(standingsResponse, resultsResponse, season) {
 
 export async function getFerrariDataset(season = DEFAULT_SEASON) {
   const cacheKey = `ferrari-${season}`;
-  const cachedPayload = await getCachedPayload(cacheKey);
 
+  // 1. Serve from cache if still fresh
+  const cachedPayload = await getCachedPayload(cacheKey);
   if (cachedPayload) {
     return cachedPayload;
   }
 
-  const [standingsResponse, resultsResponse] = await Promise.all([
-    requestF1(`${season}/constructorstandings/`, { limit: 50 }),
-    requestF1(`${season}/results/`, { limit: 1000 }),
-  ]);
+  // 2. If a fetch is already in-flight, reuse it instead of firing new requests.
+  //    This is the fix for the thundering-herd 429: all 4 endpoints hit this
+  //    function at the same time on startup, but only ONE set of API calls goes out.
+  if (pendingRequests.has(cacheKey)) {
+    return pendingRequests.get(cacheKey);
+  }
 
-  const payload = normalizeFerrariData(standingsResponse, resultsResponse, season);
-  await storeCachedPayload(cacheKey, season, payload);
-  return payload;
+  // 3. No cache, no pending — start the actual fetch and register it.
+  const fetchPromise = (async () => {
+    try {
+      const [standingsResponse, resultsResponse] = await Promise.all([
+        requestF1(`${season}/constructorstandings/`, { limit: 50 }),
+        requestF1(`${season}/results/`, { limit: 1000 }),
+      ]);
+
+      const payload = normalizeFerrariData(standingsResponse, resultsResponse, season);
+      await storeCachedPayload(cacheKey, season, payload);
+      return payload;
+    } finally {
+      // Always remove the pending entry so failed requests can be retried.
+      pendingRequests.delete(cacheKey);
+    }
+  })();
+
+  pendingRequests.set(cacheKey, fetchPromise);
+  return fetchPromise;
 }

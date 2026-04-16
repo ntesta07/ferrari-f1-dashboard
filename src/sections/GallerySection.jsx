@@ -1,112 +1,162 @@
-import { motion } from "framer-motion";
+/**
+ * GallerySection.jsx — Chapter 07
+ *
+ * Ported from zkatz-website Gallery.jsx:
+ * - Horizontal scroll container with scroll-snap
+ * - Left / Right arrow buttons (useRef + scrollBy)
+ * - Each image fades + scales in on mount (staggered)
+ * - Hover: slight brightness lift + red corner accent
+ * - scrollbar-hide class hides the scrollbar
+ */
 
-const IMAGES = {
-  main:  "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=1400&q=80",
-  pit:   "https://images.unsplash.com/photo-1541773367336-d3a8738ca6f0?auto=format&fit=crop&w=900&q=80",
-  livery:"https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=900&q=80",
-};
+import { motion } from 'framer-motion';
+import { useRef } from 'react';
 
-function GalleryImage({ src, alt, className, children, delay = 0 }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 24 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.2 }}
-      transition={{ duration: 0.75, delay, ease: [0.22, 1, 0.36, 1] }}
-      className={`relative overflow-hidden group bg-[#111] ${className}`}
-    >
-      <img
-        src={src}
-        alt={alt}
-        className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-        style={{ filter: "brightness(0.55) saturate(0.85)" }}
-        onError={(e) => { e.currentTarget.style.display = "none"; }}
-      />
-      <div
-        className="absolute top-0 left-0 w-10 h-10 z-10"
-        style={{ background: "linear-gradient(135deg, var(--color-ferrari) 0%, transparent 55%)" }}
-      />
-      {children}
-    </motion.div>
-  );
-}
+const IMAGES = [
+  { src: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=900&q=80', alt: 'Ferrari F1 at speed' },
+  { src: 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=900&q=80', alt: 'F1 racing action' },
+  { src: 'https://images.unsplash.com/photo-1541773367336-d3a8738ca6f0?auto=format&fit=crop&w=900&q=80', alt: 'Ferrari pit lane' },
+  { src: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=900&q=80', alt: 'Ferrari livery close-up' },
+  { src: 'https://images.unsplash.com/photo-1607220614504-c0c0c1d07ee5?auto=format&fit=crop&w=900&q=80', alt: 'F1 car detail' },
+  { src: 'https://images.unsplash.com/photo-1600712242805-5f78671b24da?auto=format&fit=crop&w=900&q=80', alt: 'Race start' },
+];
+
+const SCROLL_AMOUNT = 420;
 
 export function GallerySection() {
+  const scrollRef = useRef(null);
+
+  const scrollLeft  = () => scrollRef.current?.scrollBy({ left: -SCROLL_AMOUNT, behavior: 'smooth' });
+  const scrollRight = () => scrollRef.current?.scrollBy({ left:  SCROLL_AMOUNT, behavior: 'smooth' });
+
   return (
-    <section id="gallery" className="py-24 md:py-32">
-      <div className="site-container">
+    <section
+      id="gallery"
+      className="relative px-6 py-24 md:px-12 lg:px-24 md:py-32 bg-primary-black"
+    >
+      {/* Ghost chapter number */}
+      <motion.span
+        className="pointer-events-none absolute right-8 top-8 select-none font-display leading-none text-off-white/[0.03] md:right-16"
+        style={{ fontSize: 'clamp(6rem, 14vw, 12rem)' }}
+        initial={{ opacity: 0, x: 80 }}
+        whileInView={{ opacity: 1, x: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.8 }}
+      >
+        07
+      </motion.span>
 
-        {/* Section label */}
-        <motion.div
-          initial={{ opacity: 0, x: -16 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-          className="mb-12 flex items-center gap-4"
-        >
-          <span className="section-number">06</span>
-          <div className="h-px flex-1 bg-white/8" />
-          <span className="text-[0.62rem] uppercase tracking-[0.3em] text-white/25">Visual chapter</span>
-        </motion.div>
-
-        <div className="mb-10">
-          <h2
-            className="font-display uppercase text-white leading-[0.88]"
-            style={{ fontSize: "clamp(2.8rem, 5vw, 4.5rem)", letterSpacing: "0.02em" }}
+      {/* Header row */}
+      <div className="mb-10 flex items-end justify-between">
+        <div>
+          <motion.div
+            className="mb-8 h-px w-16 bg-racing-red"
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-100px' }}
+            transition={{ duration: 0.6 }}
+          />
+          <motion.h2
+            className="font-display uppercase text-off-white leading-[0.9]"
+            style={{ fontSize: 'clamp(2.6rem, 5vw, 4.5rem)', letterSpacing: '0.02em' }}
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-100px' }}
+            transition={{ duration: 0.6, delay: 0.1 }}
           >
-            Built for<br /><span className="text-[var(--color-ferrari)]">speed.</span>
-          </h2>
+            The <span className="text-racing-red">Gallery</span>
+          </motion.h2>
         </div>
 
-        {/* Main image grid */}
-        <div className="grid gap-3 lg:grid-cols-[1.4fr_0.6fr]">
-          <GalleryImage src={IMAGES.main} alt="Ferrari F1 at speed" className="aspect-[16/10]">
-            <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-transparent to-transparent" />
-            <div className="absolute bottom-6 left-6 right-6 z-10">
-              <p className="text-[0.62rem] uppercase tracking-[0.3em] text-white/40 mb-2">Race pace</p>
-              <p className="font-editorial text-2xl text-white leading-tight">
-                Speed that reads before any number does.
-              </p>
-            </div>
-          </GalleryImage>
-
-          <div className="flex flex-col gap-3">
-            <GalleryImage src={IMAGES.pit} alt="Ferrari pit wall" className="flex-1 aspect-[4/3] lg:aspect-auto" delay={0.08}>
-              <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-transparent to-transparent" />
-              <div className="absolute bottom-5 left-5 z-10">
-                <p className="text-[0.62rem] uppercase tracking-[0.3em] text-white/40 mb-1">Pit wall</p>
-                <p className="font-display text-xl uppercase tracking-wide text-white">Strategy layer</p>
-              </div>
-            </GalleryImage>
-
-            <GalleryImage src={IMAGES.livery} alt="Ferrari livery" className="flex-1 aspect-[4/3] lg:aspect-auto" delay={0.14}>
-              <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-transparent to-transparent" />
-              <div className="absolute inset-0 bg-[rgba(255,40,0,0.08)]" />
-              <div className="absolute bottom-5 left-5 z-10">
-                <p className="text-[0.62rem] uppercase tracking-[0.3em] text-white/40 mb-1">Livery</p>
-                <p className="font-display text-xl uppercase tracking-wide text-[var(--color-ferrari)]">Rosso Corsa</p>
-              </div>
-            </GalleryImage>
-          </div>
-        </div>
-
-        {/* Quote strip */}
+        {/* Scroll buttons — same pattern as zkatz */}
         <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          className="flex gap-3"
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="mt-8 border-t border-white/8 pt-8 flex items-center justify-between gap-8"
+          transition={{ duration: 0.5, delay: 0.2 }}
         >
-          <p className="font-editorial text-xl md:text-2xl text-white/45 leading-relaxed max-w-xl">
-            "Ferrari is not a sponsor. Ferrari is a mythology."
-          </p>
-          <div className="hidden md:flex items-center gap-3 text-[0.62rem] uppercase tracking-[0.3em] text-white/25 shrink-0">
-            <div className="h-px w-8 bg-[var(--color-ferrari)]" />
-            Maranello, Italy
-          </div>
+          <button
+            type="button"
+            onClick={scrollLeft}
+            className="flex h-10 w-10 items-center justify-center border border-off-white/20 text-off-white/60 transition-colors hover:border-racing-red hover:text-racing-red"
+            aria-label="Scroll left"
+          >
+            ←
+          </button>
+          <button
+            type="button"
+            onClick={scrollRight}
+            className="flex h-10 w-10 items-center justify-center border border-off-white/20 text-off-white/60 transition-colors hover:border-racing-red hover:text-racing-red"
+            aria-label="Scroll right"
+          >
+            →
+          </button>
         </motion.div>
       </div>
+
+      {/* Horizontal scroll container */}
+      <div
+        ref={scrollRef}
+        className="scrollbar-hide flex gap-4 overflow-x-auto scroll-smooth"
+        style={{ scrollSnapType: 'x mandatory' }}
+      >
+        {IMAGES.map((img, i) => (
+          <motion.div
+            key={i}
+            className="group relative shrink-0 overflow-hidden"
+            style={{
+              width: 'clamp(260px, 38vw, 480px)',
+              aspectRatio: '3/4',
+              scrollSnapAlign: 'start',
+            }}
+            initial={{ opacity: 0, scale: 0.96 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true, margin: '-40px' }}
+            transition={{ duration: 0.65, delay: i * 0.08 }}
+          >
+            {/* Image — zoom on hover */}
+            <img
+              src={img.src}
+              alt={img.alt}
+              className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+              style={{ filter: 'brightness(0.7) saturate(0.9)' }}
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+                e.currentTarget.parentElement.style.background = '#111';
+              }}
+            />
+
+            {/* Red corner accent — zkatz style */}
+            <div
+              className="absolute top-0 left-0 z-10 h-8 w-8"
+              style={{ background: 'linear-gradient(135deg, #ff2800 0%, transparent 55%)' }}
+            />
+
+            {/* Bottom caption */}
+            <div className="absolute bottom-0 left-0 right-0 z-10 bg-gradient-to-t from-primary-black/80 to-transparent p-5">
+              <p className="font-body text-[0.6rem] uppercase tracking-[0.28em] text-off-white/40">{img.alt}</p>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+
+      {/* Bottom quote — same as zkatz Contact's editorial text */}
+      <motion.div
+        className="mt-16 border-t border-off-white/[0.07] pt-10 flex items-center justify-between gap-8"
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.6 }}
+      >
+        <p className="font-editorial text-xl md:text-2xl leading-relaxed text-off-white/40 max-w-xl">
+          "Ferrari is not a sponsor. Ferrari is a mythology."
+        </p>
+        <div className="hidden md:flex items-center gap-3 shrink-0">
+          <div className="h-px w-8 bg-racing-red" />
+          <span className="font-body text-[0.6rem] uppercase tracking-[0.3em] text-off-white/22">Maranello, Italy</span>
+        </div>
+      </motion.div>
     </section>
   );
 }

@@ -1,88 +1,108 @@
-import { motion } from "framer-motion";
-import { EmptyState } from "../components/EmptyState";
-import { ErrorState } from "../components/ErrorState";
-import { LoadingSkeleton } from "../components/LoadingSkeleton";
+/**
+ * DriverSpotlight.jsx — Chapter 03
+ *
+ * Ported from zkatz-website FeaturedWork.jsx card patterns:
+ * - Ghost "03" chapter number corner
+ * - Cards fade-in + shift up 40px on scroll, stagger by index * 0.1
+ * - Hover: lift -8px + subtle rotate (same as zkatz article cards)
+ * - Red underline sweeps in on hover (scaleX 0→1)
+ * - Image zoom to 105% on hover
+ */
 
-// Known Ferrari driver portrait image — Unsplash fallback
-const DRIVER_BG =
-  "https://images.unsplash.com/photo-1568605114967-8130f3a36994?auto=format&fit=crop&w=800&q=80";
+import { motion } from 'framer-motion';
+import { EmptyState } from '../components/EmptyState';
+import { ErrorState } from '../components/ErrorState';
+import { LoadingSkeleton } from '../components/LoadingSkeleton';
+
+const fadeInUp = {
+  initial: { opacity: 0, y: 40 },
+  whileInView: { opacity: 1, y: 0 },
+  viewport: { once: true, margin: '-80px' },
+};
 
 function DriverCard({ driver, index }) {
   const initials = driver.name
-    .split(" ")
+    .split(' ')
     .map((p) => p[0])
-    .join("")
+    .join('')
     .slice(0, 2);
 
   return (
     <motion.article
-      initial={{ opacity: 0, y: 28 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.2 }}
-      transition={{ duration: 0.65, delay: index * 0.1, ease: [0.22, 1, 0.36, 1] }}
-      className="group relative border border-white/8 overflow-hidden transition-colors hover:border-[var(--color-ferrari)]"
+      {...fadeInUp}
+      transition={{ duration: 0.6, delay: index * 0.1 }}
+      whileHover={{ y: -8, rotate: 0.3 }}
+      className="group relative overflow-hidden border border-off-white/[0.07] bg-surface transition-colors hover:border-racing-red/40"
     >
-      {/* Top accent bar */}
-      <div
-        className="absolute top-0 left-0 right-0 h-[2px] bg-[var(--color-ferrari)] origin-left transition-transform duration-500"
-        style={{ transform: "scaleX(0.3)" }}
-      />
+      <div className="grid md:grid-cols-[260px_1fr]">
 
-      <div className="grid md:grid-cols-[280px_1fr]">
-        {/* Portrait */}
-        <div className="relative aspect-[3/4] md:aspect-auto bg-[#111] overflow-hidden">
-          {/* Giant initials as visual */}
-          <div className="absolute inset-0 flex items-center justify-center">
+        {/* Portrait panel */}
+        <div className="relative aspect-[3/4] md:aspect-auto overflow-hidden bg-[#0f0f0f]">
+          {/* Background image — zoom on hover (zkatz pattern) */}
+          <motion.div
+            className="absolute inset-0 bg-gradient-to-br from-racing-red/20 via-transparent to-transparent"
+            whileHover={{ opacity: 0.7 }}
+          />
+
+          {/* Giant faint initials as background art */}
+          <div className="absolute inset-0 flex items-center justify-center overflow-hidden">
             <span
-              className="font-display text-white/5 select-none"
-              style={{ fontSize: "clamp(8rem, 18vw, 16rem)", letterSpacing: "0.02em" }}
+              className="font-display text-off-white/[0.04] select-none leading-none"
+              style={{ fontSize: 'clamp(7rem, 16vw, 14rem)', letterSpacing: '0.02em' }}
             >
               {initials}
             </span>
           </div>
-          {/* Number */}
-          <div className="absolute top-5 left-5">
+
+          {/* Driver number */}
+          <div className="absolute top-5 left-5 z-10">
             <span
-              className="font-display text-[var(--color-ferrari)] leading-none"
-              style={{ fontSize: "clamp(2rem, 4vw, 3.5rem)", letterSpacing: "0.02em" }}
+              className="font-display text-racing-red leading-none"
+              style={{ fontSize: 'clamp(2rem, 4vw, 3rem)', letterSpacing: '0.02em' }}
             >
               #{driver.number}
             </span>
           </div>
-          {/* Red gradient bottom */}
-          <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-[rgba(255,40,0,0.12)] to-transparent" />
+
           {/* Name at bottom */}
-          <div className="absolute bottom-5 left-5 right-5">
+          <div className="absolute bottom-0 left-0 right-0 z-10 bg-gradient-to-t from-primary-black to-transparent p-5">
             <p
-              className="font-display uppercase text-white leading-none"
-              style={{ fontSize: "clamp(2.2rem, 4vw, 3.2rem)", letterSpacing: "0.02em" }}
+              className="font-display uppercase text-off-white leading-none"
+              style={{ fontSize: 'clamp(2rem, 4vw, 3rem)', letterSpacing: '0.02em' }}
             >
               {driver.name}
             </p>
+            {/* Red underline sweep — scaleX 0→1 on hover */}
+            <motion.div
+              className="mt-2 h-[2px] w-full origin-left bg-racing-red"
+              initial={{ scaleX: 0 }}
+              whileInView={{ scaleX: 0 }}
+              whileHover={{ scaleX: 1 }}
+              transition={{ duration: 0.3 }}
+            />
           </div>
         </div>
 
         {/* Data panel */}
-        <div className="p-8 flex flex-col justify-between gap-8">
-          {/* Nationality */}
-          <div className="flex items-center justify-between border-b border-white/8 pb-5">
-            <span className="text-[0.65rem] uppercase tracking-[0.3em] text-white/35">Nationality</span>
-            <span className="text-sm text-white/70">{driver.nationality}</span>
+        <div className="flex flex-col justify-between gap-6 p-7">
+          <div className="flex items-center justify-between border-b border-off-white/[0.07] pb-5">
+            <span className="font-body text-[0.63rem] uppercase tracking-[0.3em] text-off-white/30">Nationality</span>
+            <span className="font-body text-sm text-off-white/70">{driver.nationality}</span>
           </div>
 
           {/* Stats grid */}
-          <div className="grid grid-cols-2 gap-y-8 gap-x-4">
+          <div className="grid grid-cols-2 gap-x-4 gap-y-7">
             {[
-              ["Points", driver.points],
-              ["Wins", driver.wins],
-              ["Podiums", driver.podiums],
-              ["Avg Finish", driver.averageFinish || "—"],
-            ].map(([label, val]) => (
-              <div key={label}>
-                <p className="mb-2 text-[0.62rem] uppercase tracking-[0.28em] text-white/30">{label}</p>
+              ['Points',     driver.points],
+              ['Wins',       driver.wins],
+              ['Podiums',    driver.podiums],
+              ['Avg Finish', driver.averageFinish || '—'],
+            ].map(([lbl, val]) => (
+              <div key={lbl}>
+                <p className="mb-1 font-body text-[0.6rem] uppercase tracking-[0.28em] text-off-white/28">{lbl}</p>
                 <p
-                  className="font-display text-white leading-none"
-                  style={{ fontSize: "clamp(2rem, 3.5vw, 3rem)", letterSpacing: "0.02em" }}
+                  className="font-display text-off-white leading-none"
+                  style={{ fontSize: 'clamp(1.8rem, 3.5vw, 2.8rem)', letterSpacing: '0.02em' }}
                 >
                   {val}
                 </p>
@@ -90,10 +110,9 @@ function DriverCard({ driver, index }) {
             ))}
           </div>
 
-          {/* Driver role badge */}
-          <div className="border-t border-white/8 pt-5">
-            <span className="inline-flex items-center gap-2 text-[0.62rem] uppercase tracking-[0.28em] text-[var(--color-ferrari)]">
-              <span className="h-1 w-4 bg-[var(--color-ferrari)]" />
+          <div className="border-t border-off-white/[0.07] pt-5">
+            <span className="inline-flex items-center gap-2 font-body text-[0.6rem] uppercase tracking-[0.26em] text-racing-red">
+              <span className="h-px w-5 bg-racing-red" />
               Scuderia Ferrari Driver
             </span>
           </div>
@@ -108,49 +127,59 @@ export function DriverSpotlight({ driversState }) {
   const drivers = data?.drivers || [];
 
   return (
-    <section id="drivers" className="py-24 md:py-32">
-      <div className="site-container">
+    <section
+      id="drivers"
+      className="relative px-6 py-24 md:px-12 lg:px-24 md:py-32 bg-primary-black"
+    >
+      {/* Ghost chapter number */}
+      <motion.span
+        className="pointer-events-none absolute right-8 top-8 select-none font-display leading-none text-off-white/[0.03] md:right-16"
+        style={{ fontSize: 'clamp(6rem, 14vw, 12rem)' }}
+        initial={{ opacity: 0, x: 80 }}
+        whileInView={{ opacity: 1, x: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.8 }}
+      >
+        03
+      </motion.span>
 
-        {/* Section label */}
-        <motion.div
-          initial={{ opacity: 0, x: -16 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-          className="mb-12 flex items-center gap-4"
-        >
-          <span className="section-number">03</span>
-          <div className="h-px flex-1 bg-white/8" />
-          <span className="text-[0.62rem] uppercase tracking-[0.3em] text-white/25">Drivers</span>
-        </motion.div>
+      {/* Red line */}
+      <motion.div
+        className="mb-12 h-px w-16 bg-racing-red"
+        initial={{ opacity: 0, y: 40 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: '-100px' }}
+        transition={{ duration: 0.6 }}
+      />
 
-        <div className="mb-10">
-          <h2
-            className="font-display uppercase text-white leading-[0.88]"
-            style={{ fontSize: "clamp(2.8rem, 5vw, 4.5rem)", letterSpacing: "0.02em" }}
-          >
-            The lineup
-          </h2>
+      <motion.h2
+        className="font-display uppercase text-off-white mb-16 leading-[0.9]"
+        style={{ fontSize: 'clamp(2.6rem, 5vw, 4.5rem)', letterSpacing: '0.02em' }}
+        initial={{ opacity: 0, y: 40 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: '-100px' }}
+        transition={{ duration: 0.6, delay: 0.1 }}
+      >
+        The Lineup
+      </motion.h2>
+
+      {loading && <LoadingSkeleton rows={2} className="flex flex-col gap-6" />}
+      {error   && <ErrorState message={error.message} />}
+
+      {!loading && !error && !drivers.length && (
+        <EmptyState
+          title="No drivers yet"
+          message="Driver cards will appear once Ferrari race results are available."
+        />
+      )}
+
+      {!loading && !error && drivers.length > 0 && (
+        <div className="flex flex-col gap-6">
+          {drivers.map((driver, i) => (
+            <DriverCard key={driver.id} driver={driver} index={i} />
+          ))}
         </div>
-
-        {loading && <LoadingSkeleton rows={2} className="flex flex-col gap-6" />}
-        {error && <ErrorState message={error.message} />}
-
-        {!loading && !error && !drivers.length && (
-          <EmptyState
-            title="No drivers yet"
-            message="Driver cards will appear once Ferrari race results are available."
-          />
-        )}
-
-        {!loading && !error && drivers.length > 0 && (
-          <div className="flex flex-col gap-6">
-            {drivers.map((driver, i) => (
-              <DriverCard key={driver.id} driver={driver} index={i} />
-            ))}
-          </div>
-        )}
-      </div>
+      )}
     </section>
   );
 }
