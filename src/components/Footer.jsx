@@ -26,10 +26,7 @@ export function Footer() {
 
           <div className="space-y-4">
             <div className="flex items-center gap-3">
-              <svg width="18" height="22" viewBox="0 0 22 28" fill="none">
-                <path d="M0 0h22v18L11 28 0 18V0z" fill="#ff2800" />
-                <path d="M4 7h3V4h2v3h4V4h2v3h3v2h-3v4h-2V9H9v4H7V9H4V7z" fill="#f4eee4" />
-              </svg>
+              <img src="/logo.png" alt="Ferrari" className="h-7 w-auto" style={{ imageRendering: 'high-quality' }} />
               <span className="font-display text-2xl uppercase tracking-[0.18em] text-off-white">
                 Scuderia Ferrari
               </span>
@@ -54,7 +51,7 @@ export function Footer() {
 
         {/* Bottom bar */}
         <div className="mt-12 flex items-center justify-between border-t border-off-white/[0.07] pt-6 text-[0.62rem] uppercase tracking-[0.2em] text-off-white/18">
-          <span>Hack4Impact BU · 2025</span>
+          <span>Hack4Impact BU · 2026</span>
           <a href="#hero" className="transition-colors hover:text-off-white/45">↑ Back to top</a>
         </div>
       </div>

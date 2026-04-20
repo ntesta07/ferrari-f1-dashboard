@@ -4,14 +4,23 @@
  * Full-viewport hero with parallax background image, staggered
  * headline reveal, and a bottom marquee strip — all using the
  * fadeInUp / parallax patterns from zkatz-website.
+ *
+ * PLACEHOLDER: Replace /hero.jpg in the /public folder with your
+ * Ferrari photo to swap out the placeholder background.
  */
 
 import { motion, useScroll, useTransform } from 'framer-motion';
+import { Camera } from 'lucide-react';
+import { useState } from 'react';
 
-const FERRARI_IMG =
-  'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=1800&q=80';
+// ─── Hero background image ────────────────────────────────────────────
+// Source file lives at /public/hero.jpg
+const HERO_IMAGE = '/hero.avif';
 
 export function HeroSection() {
+  const [imgLoaded, setImgLoaded] = useState(false);
+  const [imgError, setImgError]   = useState(!HERO_IMAGE);
+
   const { scrollY } = useScroll();
   // Parallax: image drifts down as we scroll (same pattern as zkatz About)
   const imgY   = useTransform(scrollY, [0, 700], [0, 140]);
@@ -23,20 +32,62 @@ export function HeroSection() {
 
       {/* Parallax background */}
       <motion.div style={{ y: imgY }} className="absolute inset-0 z-0">
-        <img
-          src={FERRARI_IMG}
-          alt="Ferrari F1 at speed"
-          className="h-full w-full object-cover object-center"
-          style={{ filter: 'brightness(0.3) saturate(1.1)' }}
-          onError={(e) => { e.currentTarget.style.display = 'none'; }}
-        />
-        {/* Fallback gradient if image fails */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[#1a0000] via-primary-black to-primary-black" />
+
+        {/* ── Placeholder (shown when no image is set or image fails) ── */}
+        {imgError && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-4"
+               style={{ background: 'linear-gradient(135deg, #15121e 0%, #110f1a 50%, #131520 100%)' }}>
+            {/* subtle grid overlay */}
+            <div className="absolute inset-0 opacity-[0.04]"
+                 style={{
+                   backgroundImage: 'linear-gradient(#ff2800 1px, transparent 1px), linear-gradient(90deg, #ff2800 1px, transparent 1px)',
+                   backgroundSize: '60px 60px',
+                 }} />
+            {/* placeholder label */}
+            <div className="relative z-10 flex flex-col items-center gap-3 rounded border border-dashed border-off-white/20 px-10 py-8 text-center">
+              <Camera size={32} className="text-racing-red/60" strokeWidth={1.5} />
+              <p className="font-body text-xs uppercase tracking-[0.3em] text-off-white/30">
+                Hero Image Placeholder
+              </p>
+              <p className="font-body text-[0.65rem] text-off-white/18 max-w-[18rem]">
+                Drop <code className="text-racing-red/60">hero.jpg</code> into <code className="text-racing-red/60">/public</code> and set{' '}
+                <code className="text-racing-red/60">HERO_IMAGE = '/hero.jpg'</code>
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* ── Actual photo (hidden until loaded, fades in) ── */}
+        {HERO_IMAGE && (
+          <img
+            src={HERO_IMAGE}
+            alt="Ferrari SF-25 studio render"
+            className="h-full w-full transition-opacity duration-1000"
+            style={{
+              objectFit: 'cover',
+              // Keep the car's body in frame — slightly right-of-center, upper half
+              objectPosition: '60% 40%',
+              // The studio shot is already dark; just a touch of dimming so
+              // text stays readable, saturate to pop the red livery
+              filter: 'brightness(0.55) saturate(1.3)',
+              opacity: imgLoaded ? 1 : 0,
+            }}
+            onLoad={() => { setImgLoaded(true); setImgError(false); }}
+            onError={() => setImgError(true)}
+          />
+        )}
+
+        {/* Gradient: left-side shadow so headline text is always readable */}
+        <div className="absolute inset-0"
+             style={{
+               background: 'linear-gradient(105deg, rgba(16,14,24,0.90) 0%, rgba(16,14,24,0.48) 45%, rgba(16,14,24,0.08) 100%)',
+             }} />
+        {/* Bottom fade into page background */}
+        <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-primary-black to-transparent" />
       </motion.div>
 
-      {/* Vignette overlays */}
-      <div className="absolute inset-0 z-10 bg-gradient-to-t from-primary-black via-transparent to-transparent" />
-      <div className="absolute inset-0 z-10 bg-gradient-to-r from-primary-black via-primary-black/30 to-transparent" />
+      {/* Top vignette so the red accent bar blends cleanly */}
+      <div className="absolute inset-x-0 top-0 h-32 z-10 bg-gradient-to-b from-primary-black/60 to-transparent" />
 
       {/* Red accent bar at very top */}
       <div className="absolute top-0 left-0 right-0 h-[2px] z-20 bg-racing-red" />
@@ -55,7 +106,7 @@ export function HeroSection() {
         >
           <div className="h-px w-10 bg-racing-red" />
           <span className="font-body text-xs uppercase tracking-[0.36em] text-off-white/50">
-            2025 Formula 1 Season · Live Data
+            2026 Formula 1 Season · Live Data
           </span>
         </motion.div>
 
@@ -106,7 +157,7 @@ export function HeroSection() {
         <div className="flex w-max animate-[marquee_24s_linear_infinite]">
           {[0, 1].map((i) => (
             <div key={i} className="flex shrink-0 items-center gap-10 pr-10 font-body text-[0.6rem] uppercase tracking-[0.3em] text-off-white/25">
-              {['Scuderia Ferrari', '·', 'Constructor Championship', '·', 'Maranello', '·', 'Formula 1', '·', 'Live Race Data', '·', 'Season 2025', '·'].map((word, j) => (
+              {['Scuderia Ferrari', '·', 'Constructor Championship', '·', 'Maranello', '·', 'Formula 1', '·', 'Live Race Data', '·', '2026 Season', '·'].map((word, j) => (
                 <span key={j} className={word === '·' ? 'text-racing-red' : ''}>{word}</span>
               ))}
             </div>

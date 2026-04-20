@@ -1,16 +1,18 @@
 @import "tailwindcss";
 
 /* ── Tailwind design tokens ─────────────────────────────────────────
-   Registering these makes bg-primary-black, text-racing-red, etc.
-   available as Tailwind utility classes throughout the project.
+   Muted palette:
+   Red:        #c0261d  — deep crimson, not neon-orange
+   Text:       #d8dde6  — warm-cool light silver
+   Backgrounds: layered dark purple-charcoal (not flat black)
 ──────────────────────────────────────────────────────────────────── */
 @theme {
-  --color-primary-black: #0a0a0a;
-  --color-surface:       #111111;
-  --color-surface-up:    #181818;
-  --color-racing-red:    #ff2800;
-  --color-racing-red-deep: #cc1e00;
-  --color-off-white:     #f4eee4;
+  --color-primary-black:    #110f1a;
+  --color-surface:          #1a1824;
+  --color-surface-up:       #22202e;
+  --color-racing-red:       #c0261d;
+  --color-racing-red-deep:  #9a1e16;
+  --color-off-white:        #d8dde6;
 
   --font-display:   "Bebas Neue", sans-serif;
   --font-body:      "Inter Tight", sans-serif;
@@ -24,26 +26,38 @@ html { scroll-behavior: smooth; }
 
 body {
   font-family: var(--font-body);
-  background-color: #0a0a0a;
-  color: #f4eee4;
+  /* Multi-tone dark background — subtle mix of purple-charcoal, dark slate,
+     and near-black so the page never feels flat or harsh */
+  background: linear-gradient(155deg,
+    #100f18 0%,
+    #13111e 20%,
+    #161420 40%,
+    #13151f 60%,
+    #111318 80%,
+    #100f1a 100%
+  );
+  background-attachment: fixed;
+  color: #d8dde6;
   min-width: 320px;
   overflow-x: hidden;
-  /* keep legacy var for chart / existing inline styles */
-  --color-ferrari: #ff2800;
+  --color-ferrari: #c0261d;
 }
 
 a { color: inherit; text-decoration: none; }
 button, input { font: inherit; }
 
+/* ── Hide native cursor — custom follower replaces it ──────────────── */
+html, body { cursor: none !important; }
+
 ::selection {
-  background: #ff2800;
-  color: #f4eee4;
+  background: #c0261d;
+  color: #d8dde6;
 }
 
 /* ── Scrollbar ─────────────────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: #0a0a0a; }
-::-webkit-scrollbar-thumb { background: #ff2800; border-radius: 0; }
+::-webkit-scrollbar-track { background: #110f1a; }
+::-webkit-scrollbar-thumb { background: #c0261d; border-radius: 0; }
 
 /* Hide scrollbar (used on horizontal gallery) */
 .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
@@ -59,26 +73,26 @@ button, input { font: inherit; }
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.2em;
-  cursor: pointer;
+  cursor: none;
   transition: all 160ms ease;
   border: none;
   font-family: var(--font-body);
 }
 .btn-primary {
-  background: #ff2800;
-  color: white;
+  background: #c0261d;
+  color: #d8dde6;
 }
 .btn-primary:hover {
-  background: #cc1e00;
+  background: #9a1e16;
   transform: translateY(-2px);
 }
 .btn-ghost {
   background: transparent;
-  color: #f4eee4;
-  border: 1px solid rgba(244, 238, 228, 0.22);
+  color: #d8dde6;
+  border: 1px solid rgba(216, 221, 230, 0.22);
 }
 .btn-ghost:hover {
-  border-color: rgba(244, 238, 228, 0.55);
+  border-color: rgba(216, 221, 230, 0.55);
   transform: translateY(-2px);
 }
 
@@ -89,36 +103,36 @@ button, input { font: inherit; }
   font-size: 0.63rem;
   text-transform: uppercase;
   letter-spacing: 0.24em;
-  color: rgba(244, 238, 228, 0.38);
+  color: rgba(216, 221, 230, 0.38);
   text-align: left;
-  border-bottom: 1px solid rgba(244, 238, 228, 0.07);
+  border-bottom: 1px solid rgba(216, 221, 230, 0.07);
   font-weight: 400;
 }
 .data-table td {
   padding: 0.85rem 1.25rem;
   font-size: 0.88rem;
-  border-bottom: 1px solid rgba(244, 238, 228, 0.04);
-  color: rgba(244, 238, 228, 0.68);
+  border-bottom: 1px solid rgba(216, 221, 230, 0.04);
+  color: rgba(216, 221, 230, 0.68);
 }
 .data-table tbody tr:hover td {
-  background: rgba(255, 40, 0, 0.05);
-  color: #f4eee4;
+  background: rgba(192, 38, 29, 0.06);
+  color: #d8dde6;
 }
 
 /* ── Search input ──────────────────────────────────────────────────── */
 .search-input {
   width: 100%;
-  background: #111;
-  border: 1px solid rgba(244, 238, 228, 0.1);
-  color: #f4eee4;
+  background: #1a1824;
+  border: 1px solid rgba(216, 221, 230, 0.1);
+  color: #d8dde6;
   padding: 0.85rem 1.25rem;
   font-size: 0.88rem;
   outline: none;
   transition: border-color 180ms;
   font-family: var(--font-body);
 }
-.search-input::placeholder { color: rgba(244, 238, 228, 0.28); }
-.search-input:focus { border-color: #ff2800; }
+.search-input::placeholder { color: rgba(216, 221, 230, 0.28); }
+.search-input:focus { border-color: #c0261d; }
 
 /* ── Keyframes ─────────────────────────────────────────────────────── */
 @keyframes marquee {

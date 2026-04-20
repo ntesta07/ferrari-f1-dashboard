@@ -20,12 +20,20 @@ const fadeInUp = {
   viewport: { once: true, margin: '-80px' },
 };
 
+const DRIVER_PHOTOS = {
+  hamilton: { src: '/hamilton.png', position: 'center 20%' },
+  leclerc:  { src: '/leclerc2.jpg', position: 'center 15%' },
+};
+
+function getPhoto(name = '') {
+  const lower = name.toLowerCase();
+  if (lower.includes('hamilton')) return DRIVER_PHOTOS.hamilton;
+  if (lower.includes('leclerc'))  return DRIVER_PHOTOS.leclerc;
+  return null;
+}
+
 function DriverCard({ driver, index }) {
-  const initials = driver.name
-    .split(' ')
-    .map((p) => p[0])
-    .join('')
-    .slice(0, 2);
+  const photo = getPhoto(driver.name);
 
   return (
     <motion.article
@@ -38,21 +46,31 @@ function DriverCard({ driver, index }) {
 
         {/* Portrait panel */}
         <div className="relative aspect-[3/4] md:aspect-auto overflow-hidden bg-[#0f0f0f]">
-          {/* Background image — zoom on hover (zkatz pattern) */}
+
+          {/* Driver photo */}
+          {photo && (
+            <img
+              src={photo.src}
+              alt={driver.name}
+              className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.05]"
+              style={{
+                objectPosition: photo.position,
+                filter: 'brightness(0.88) saturate(1.15) contrast(1.04)',
+                imageRendering: 'high-quality',
+              }}
+            />
+          )}
+
+          {/* Red tint overlay on hover */}
           <motion.div
             className="absolute inset-0 bg-gradient-to-br from-racing-red/20 via-transparent to-transparent"
-            whileHover={{ opacity: 0.7 }}
+            initial={{ opacity: 0 }}
+            whileHover={{ opacity: 1 }}
+            transition={{ duration: 0.3 }}
           />
 
-          {/* Giant faint initials as background art */}
-          <div className="absolute inset-0 flex items-center justify-center overflow-hidden">
-            <span
-              className="font-display text-off-white/[0.04] select-none leading-none"
-              style={{ fontSize: 'clamp(7rem, 16vw, 14rem)', letterSpacing: '0.02em' }}
-            >
-              {initials}
-            </span>
-          </div>
+          {/* Bottom fade so name stays readable */}
+          <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-primary-black to-transparent" />
 
           {/* Driver number */}
           <div className="absolute top-5 left-5 z-10">
@@ -65,7 +83,7 @@ function DriverCard({ driver, index }) {
           </div>
 
           {/* Name at bottom */}
-          <div className="absolute bottom-0 left-0 right-0 z-10 bg-gradient-to-t from-primary-black to-transparent p-5">
+          <div className="absolute bottom-0 left-0 right-0 z-10 p-5">
             <p
               className="font-display uppercase text-off-white leading-none"
               style={{ fontSize: 'clamp(2rem, 4vw, 3rem)', letterSpacing: '0.02em' }}

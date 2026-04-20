@@ -43,10 +43,7 @@ export function Navbar() {
     >
       {/* Logo */}
       <a href="#hero" className="flex items-center gap-3 group">
-        <svg width="20" height="25" viewBox="0 0 22 28" fill="none">
-          <path d="M0 0h22v18L11 28 0 18V0z" fill="#ff2800" />
-          <path d="M4 7h3V4h2v3h4V4h2v3h3v2h-3v4h-2V9H9v4H7V9H4V7z" fill="#f4eee4" />
-        </svg>
+        <img src="/logo.png" alt="Ferrari" className="h-8 w-auto" style={{ imageRendering: 'high-quality' }} />
         <span className="font-display text-2xl uppercase tracking-[0.18em] text-off-white group-hover:text-racing-red transition-colors">
           Scuderia Ferrari
         </span>

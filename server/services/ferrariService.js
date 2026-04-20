@@ -146,6 +146,7 @@ function normalizeFerrariData(standingsResponse, resultsResponse, season) {
   const driverMap = new Map();
   const results = [];
   const chart = [];
+  const circuits = [];
   let cumulativePoints = 0;
 
   races.forEach((race) => {
@@ -157,6 +158,26 @@ function normalizeFerrariData(standingsResponse, resultsResponse, season) {
 
     const racePoints = ferrariResults.reduce((sum, result) => sum + toNumber(result.points), 0);
     cumulativePoints += racePoints;
+
+    // Per-circuit summary for the Circuit Map section
+    circuits.push({
+      round:      toNumber(race.round),
+      raceName:   race.raceName || "Unknown Grand Prix",
+      circuitId:  race?.Circuit?.circuitId || "",
+      circuit:    race?.Circuit?.circuitName || "Unknown Circuit",
+      locality:   race?.Circuit?.Location?.locality || "",
+      country:    race?.Circuit?.Location?.country || "",
+      date:       race?.date || "TBD",
+      totalPoints: racePoints,
+      drivers: ferrariResults.map((r) => ({
+        name:     `${r.Driver?.givenName || ""} ${r.Driver?.familyName || ""}`.trim(),
+        number:   r.Driver?.permanentNumber || "N/A",
+        grid:     r.grid || "N/A",
+        finish:   r.positionText || r.position || r.status || "N/A",
+        points:   toNumber(r.points),
+        status:   r.status || "",
+      })),
+    });
 
     chart.push({
       round: toNumber(race.round),
@@ -239,6 +260,7 @@ function normalizeFerrariData(standingsResponse, resultsResponse, season) {
     },
     drivers,
     results: results.sort((a, b) => a.round - b.round || a.driver.localeCompare(b.driver)),
+    circuits,
     chart,
     insights: {
       bestFinish: bestFinish

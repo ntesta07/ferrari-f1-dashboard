@@ -7,6 +7,7 @@ import { Navbar } from './components/Navbar';
 import { useFerrariData } from './app/useFerrariData';
 import { DriverSpotlight } from './sections/DriverSpotlight';
 import { GallerySection } from './sections/GallerySection';
+import { CircuitSection }  from './sections/CircuitSection';
 import { HeroSection } from './sections/HeroSection';
 import { InsightsSection } from './sections/InsightsSection';
 import { OverviewStats } from './sections/OverviewStats';
@@ -21,6 +22,7 @@ export default function App() {
   const driversState   = useFerrariData('/ferrari/drivers');
   const chartState     = useFerrariData('/ferrari/chart');
   const insightsState  = useFerrariData('/ferrari/insights');
+  const circuitsState  = useFerrariData('/ferrari/circuits');
 
   return (
     <>
@@ -44,7 +46,7 @@ export default function App() {
           <ResultsTableSection />
           <PerformanceChartSection chartState={chartState} />
           <InsightsSection insightsState={insightsState} />
-          <GallerySection />
+          <CircuitSection circuitsState={circuitsState} />
         </main>
 
         <Footer />

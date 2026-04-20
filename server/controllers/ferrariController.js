@@ -2,12 +2,9 @@ import { getFerrariDataset } from "../services/ferrariService.js";
 
 function sanitizeLimit(value) {
   const parsed = Number(value);
-
-  if (!Number.isFinite(parsed) || parsed <= 0) {
-    return 20;
-  }
-
-  return Math.min(Math.floor(parsed), 20);
+  if (!Number.isFinite(parsed) || parsed <= 0) return 20;
+  // Allow 10 / 20 / 50 — clamp anything else to 50
+  return Math.min(Math.floor(parsed), 50);
 }
 
 function sanitizePage(value) {
@@ -43,21 +40,48 @@ export async function getDrivers(req, res, next) {
 
 export async function getResults(req, res, next) {
   try {
-    const dataset = await getFerrariDataset(req.query.season);
-    const page = sanitizePage(req.query.page);
-    const limit = sanitizeLimit(req.query.limit);
-    const search = `${req.query.search || ""}`.trim().toLowerCase();
+    const dataset  = await getFerrariDataset(req.query.season);
+    const page     = sanitizePage(req.query.page);
+    const limit    = sanitizeLimit(req.query.limit);
+    const search   = `${req.query.search || ""}`.trim();
+    const isRegex  = req.query.regex === "true";
+    const boolMode = req.query.bool === "or" ? "or" : "and"; // default AND
 
-    const filteredRows = dataset.results.filter((row) => {
-      if (!search) {
-        return true;
+    function haystack(row) {
+      return [row.grandPrix, row.circuit, row.date, row.driver,
+              String(row.round), String(row.finish), String(row.points)]
+        .join(" ");
+    }
+
+    let matchFn;
+
+    if (!search) {
+      matchFn = () => true;
+
+    } else if (isRegex) {
+      // Regex mode — invalid pattern falls back to plain includes
+      let re;
+      try { re = new RegExp(search, "i"); } catch { re = null; }
+
+      if (re) {
+        matchFn = (row) => re.test(haystack(row));
+      } else {
+        const lower = search.toLowerCase();
+        matchFn = (row) => haystack(row).toLowerCase().includes(lower);
       }
 
-      return [row.grandPrix, row.circuit, row.date, row.driver, String(row.round), String(row.finish)]
-        .join(" ")
-        .toLowerCase()
-        .includes(search);
-    });
+    } else {
+      // Boolean AND / OR — split on whitespace
+      const terms = search.toLowerCase().split(/\s+/).filter(Boolean);
+      matchFn = (row) => {
+        const h = haystack(row).toLowerCase();
+        return boolMode === "or"
+          ? terms.some((t) => h.includes(t))
+          : terms.every((t) => h.includes(t));
+      };
+    }
+
+    const filteredRows = dataset.results.filter(matchFn);
 
     const totalRows = filteredRows.length;
     const totalPages = Math.max(1, Math.ceil(totalRows / limit));
@@ -75,6 +99,15 @@ export async function getResults(req, res, next) {
         hasNextPage: currentPage < totalPages,
       },
     });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function getCircuits(req, res, next) {
+  try {
+    const dataset = await getFerrariDataset(req.query.season);
+    res.json({ season: dataset.season, circuits: dataset.circuits });
   } catch (error) {
     next(error);
   }

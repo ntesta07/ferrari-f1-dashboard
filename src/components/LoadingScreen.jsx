@@ -1,100 +1,187 @@
 /**
- * LoadingScreen.jsx — Ferrari-branded intro overlay
- *
- * Ported from zkatz-website LoadingScreen pattern:
- * - Shows a full-screen black overlay
- * - "Scuderia" (off-white) + "Ferrari" (racing-red) animate in
- * - User clicks or it auto-advances after 2.8s
- * - Slides UP to reveal the site beneath (AnimatePresence exit)
+ * LoadingScreen.jsx — Ferrari intro overlay with YouTube background
+ * YouTube video plays muted/looped behind the text.
+ * Click anywhere to enter — slides the whole screen upward.
  */
 
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
 
-const INTRO_DURATION = 2800; // ms before auto-advance
+const VIDEO_ID       = 'mLkFAJyu3tI';
+const INTRO_DURATION = 6000;
+const LOOP_END       = 50; // seconds
 
 export function LoadingScreen({ onDone }) {
   const [started, setStarted] = useState(false);
   const [visible, setVisible] = useState(true);
-  const timerRef = useRef(null);
+  const [videoReady, setVideoReady] = useState(false);
+  const timerRef    = useRef(null);
+  const playerRef   = useRef(null);
+  const playerDivId = 'yt-intro-player';
 
-  // Auto-advance after INTRO_DURATION
   useEffect(() => {
     timerRef.current = setTimeout(() => handleStart(), INTRO_DURATION);
     return () => clearTimeout(timerRef.current);
+  }, []);
+
+  // Fade in video after brief moment
+  useEffect(() => {
+    const t = setTimeout(() => setVideoReady(true), 600);
+    return () => clearTimeout(t);
+  }, []);
+
+  // Load YouTube IFrame API + create player with 0–50s loop
+  useEffect(() => {
+    function createPlayer() {
+      playerRef.current = new window.YT.Player(playerDivId, {
+        videoId: VIDEO_ID,
+        playerVars: {
+          autoplay:        1,
+          mute:            1,
+          controls:        0,
+          rel:             0,
+          showinfo:        0,
+          modestbranding:  1,
+          iv_load_policy:  3,
+          disablekb:       1,
+          playsinline:     1,
+          start:           0,
+          end:             LOOP_END,
+        },
+        events: {
+          onStateChange(e) {
+            // YT.PlayerState.ENDED = 0 — seek back to start and keep playing
+            if (e.data === 0) {
+              e.target.seekTo(0);
+              e.target.playVideo();
+            }
+          },
+        },
+      });
+    }
+
+    if (window.YT && window.YT.Player) {
+      createPlayer();
+    } else {
+      // Script not loaded yet — attach to the global callback
+      const prev = window.onYouTubeIframeAPIReady;
+      window.onYouTubeIframeAPIReady = () => {
+        prev?.();
+        createPlayer();
+      };
+
+      if (!document.querySelector('script[src*="youtube.com/iframe_api"]')) {
+        const tag = document.createElement('script');
+        tag.src = 'https://www.youtube.com/iframe_api';
+        document.head.appendChild(tag);
+      }
+    }
+
+    return () => {
+      try { playerRef.current?.destroy(); } catch (_) {}
+    };
   }, []);
 
   function handleStart() {
     if (started) return;
     setStarted(true);
     clearTimeout(timerRef.current);
-    // Small delay lets exit animation begin before we signal done
     setTimeout(() => {
       setVisible(false);
       onDone?.();
-    }, 850);
+    }, 900);
   }
+
+  // No click interaction — purely automatic
 
   return (
     <AnimatePresence>
       {visible && (
         <motion.div
-          className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-primary-black cursor-pointer select-none"
-          // Exit: slide up (same as zkatz)
+          className="fixed inset-0 z-[9999] overflow-hidden select-none"
           exit={{ y: '-100%' }}
-          transition={{ duration: 0.85, ease: [0.76, 0, 0.24, 1] }}
-          onClick={handleStart}
-          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleStart(); }}
-          role="button"
-          tabIndex={0}
-          aria-label="Click to enter the Ferrari dashboard"
+          transition={{ duration: 0.9, ease: [0.76, 0, 0.24, 1] }}
         >
-          {/* Ferrari shield */}
+          {/* ── YouTube background ──────────────────────────────────── */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.85 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="mb-8"
+            className="absolute inset-0 z-0"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: videoReady ? 1 : 0 }}
+            transition={{ duration: 1.2 }}
           >
-            <svg width="42" height="52" viewBox="0 0 22 28" fill="none">
-              <path d="M0 0h22v18L11 28 0 18V0z" fill="#ff2800" />
-              <path d="M4 7h3V4h2v3h4V4h2v3h3v2h-3v4h-2V9H9v4H7V9H4V7z" fill="#f4eee4" />
-            </svg>
+            {/* YT IFrame API mounts here — oversized to fill viewport without letterboxing */}
+            <div
+              id={playerDivId}
+              className="absolute"
+              style={{
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                width: '177.78vh',
+                minWidth: '100vw',
+                height: '56.25vw',
+                minHeight: '100vh',
+              }}
+            />
+            {/* Transparent shield — sits on top of the iframe and swallows all
+                pointer events so YouTube never shows its pause/hover UI */}
+            <div className="absolute inset-0" style={{ pointerEvents: 'all' }} />
           </motion.div>
 
-          {/* "Scuderia" */}
-          <div className="overflow-hidden">
-            <motion.p
-              className="font-display text-5xl md:text-7xl uppercase tracking-[0.18em] text-off-white leading-none"
-              initial={{ y: '100%' }}
-              animate={{ y: '0%' }}
-              transition={{ duration: 0.7, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+          {/* ── Dark overlay so text is always readable ─────────────── */}
+          <div className="absolute inset-0 z-10 bg-primary-black/60" />
+
+          {/* ── Red vignette edges ──────────────────────────────────── */}
+          <div className="absolute inset-0 z-10"
+               style={{ background: 'radial-gradient(ellipse at center, transparent 40%, rgba(10,0,0,0.75) 100%)' }} />
+
+          {/* ── Content ─────────────────────────────────────────────── */}
+          <div className="relative z-20 flex h-full flex-col items-center justify-center">
+
+            {/* Ferrari logo */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+              className="mb-8"
             >
-              Scuderia
-            </motion.p>
+              <img
+                src="/logo.png"
+                alt="Ferrari"
+                className="h-20 w-auto drop-shadow-2xl"
+                style={{ imageRendering: 'high-quality' }}
+              />
+            </motion.div>
+
+            {/* "Scuderia" */}
+            <div className="overflow-hidden">
+              <motion.p
+                className="font-display text-5xl md:text-7xl uppercase tracking-[0.18em] text-off-white leading-none drop-shadow-lg"
+                initial={{ y: '105%' }}
+                animate={{ y: '0%' }}
+                transition={{ duration: 0.8, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
+              >
+                Scuderia
+              </motion.p>
+            </div>
+
+            {/* "Ferrari" */}
+            <div className="overflow-hidden">
+              <motion.p
+                className="font-display text-5xl md:text-7xl uppercase tracking-[0.18em] text-racing-red leading-none drop-shadow-lg"
+                initial={{ y: '105%' }}
+                animate={{ y: '0%' }}
+                transition={{ duration: 0.8, delay: 0.65, ease: [0.22, 1, 0.36, 1] }}
+              >
+                Ferrari
+              </motion.p>
+            </div>
+
+
           </div>
 
-          {/* "Ferrari" */}
-          <div className="overflow-hidden">
-            <motion.p
-              className="font-display text-5xl md:text-7xl uppercase tracking-[0.18em] text-racing-red leading-none"
-              initial={{ y: '100%' }}
-              animate={{ y: '0%' }}
-              transition={{ duration: 0.7, delay: 0.42, ease: [0.22, 1, 0.36, 1] }}
-            >
-              Ferrari
-            </motion.p>
-          </div>
-
-          {/* Click prompt */}
-          <motion.p
-            className="absolute bottom-10 font-body text-xs uppercase tracking-[0.32em] text-off-white/30"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1.2 }}
-          >
-            Click anywhere to continue
-          </motion.p>
+          {/* ── Red accent line at top ───────────────────────────────── */}
+          <div className="absolute top-0 left-0 right-0 h-[2px] z-30 bg-racing-red" />
         </motion.div>
       )}
     </AnimatePresence>
