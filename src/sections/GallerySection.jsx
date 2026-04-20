@@ -150,11 +150,11 @@ export function GallerySection() {
         transition={{ duration: 0.6 }}
       >
         <p className="font-editorial text-xl md:text-2xl leading-relaxed text-off-white/40 max-w-xl">
-          "Ferrari is not a sponsor. Ferrari is a mythology."
+          "There are two religions in Italy. There's the Catholic Church and there's Ferrari."
         </p>
         <div className="hidden md:flex items-center gap-3 shrink-0">
           <div className="h-px w-8 bg-racing-red" />
-          <span className="font-body text-[0.6rem] uppercase tracking-[0.3em] text-off-white/22">Maranello, Italy</span>
+          <span className="font-body text-[0.6rem] uppercase tracking-[0.3em] text-off-white/22">— Will Buxton</span>
         </div>
       </motion.div>
     </section>
