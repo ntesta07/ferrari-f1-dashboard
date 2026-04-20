@@ -71,7 +71,7 @@ async function requestF1(path, params = {}) {
     headers: {
       Accept: "application/json",
     },
-    signal: AbortSignal.timeout(12000),
+    signal: AbortSignal.timeout(9000),
   });
 
   if (!response.ok) {
